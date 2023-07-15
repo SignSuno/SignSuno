@@ -17,9 +17,4 @@ class leaderAdmin(admin.ModelAdmin):
 
 @admin.register(animations)
 class animationAdmin(admin.ModelAdmin):
-    list_display = ["tag", "type", "video"]
-    # list_display = ["id", "tag", "type", "video"]
-
-@admin.register(profile)
-class profileAdmin(admin.ModelAdmin):
-    list_display = ["userId", "profile_img"]
+    list_display = ["tag", "video"]

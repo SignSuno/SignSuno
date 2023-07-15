@@ -11,7 +11,7 @@ from rest_framework.authtoken.views import Token
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = user
-        fields = ("username", "name", "email_id", "password", "is_verified")
+        fields = ("id", "username", "name", "email_id", "password", "is_verified")
 
         extra_kwargs = {'password': {
             'write_only': True
@@ -23,19 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
             hashed_password = make_password(password)
             validated_data['password'] = hashed_password
         return super().create(validated_data)
-
-class UpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = user
-        fields = ("username", "name", "email_id")
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name',instance.name)
-        instance.email_id = validated_data.get('email_id',instance.email_id)
-        
-        instance.save()
-        return instance
-
 
 class ResetPassSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,19 +49,7 @@ class VerifyOTPSerializer(serializers.Serializer):
 class FavSerializer(serializers.ModelSerializer):
     class Meta:
         model = favs
-        fields = ("username", "word_phrase", "freq")
-
-class UpdateFavSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = favs
         fields = ("username", "word_phrase", "freq") 
-    
-    def update(self, instance, validated_data):
-        instance.word_phrase = validated_data.get('word_phrase',instance.word_phrase)
-        instance.freq =1
-        
-        instance.save()
-        return instance
 
 class ScoreSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,24 +59,5 @@ class ScoreSerializer(serializers.ModelSerializer):
 class AnimationSerializer(serializers.ModelSerializer):
     class Meta:
         model = animations
-        fields = ("tag", "type", "video") 
-
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = profile
-        fields = ("userId", "profile_img")
-
-class UpdateProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = profile
-        fields = ("userId", "profile_img")
-    
-    def update(self, instance, validated_data):
-        instance.profile_img = validated_data.get('profile_img',instance.profile_img)
-        
-        instance.save()
-        return instance
-
-
-class VideoFrameSerializer(serializers.Serializer):
-    frame = serializers.ImageField()
+        fields = ("tag", "video") 
+ 

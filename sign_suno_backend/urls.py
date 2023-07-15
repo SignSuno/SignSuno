@@ -17,14 +17,9 @@ urlpatterns = [
     path('change_details', detailsChangeView.as_view()),
     path('delete_account', deleteAccountView.as_view()),
 
-    path('profile_pic', getProfileView.as_view()),
-    path('upload_profile', UploadProfileView.as_view()),
-
 
     path('save_phrase', SavePhraseView.as_view()),
     path('getPhrases', GetPhrasesView.as_view()),
-    path('delete_phrase', DeletePhraseView.as_view()),
-    path('update_phrase', UpdatePhraseView.as_view()),
 
     path('create_leaderboard_user', createLeaderView.as_view()),
     path('leaderboard_users', AllUsersView.as_view()),
@@ -33,8 +28,8 @@ urlpatterns = [
     path('user_rank_xp', getLeaderBoardDetails.as_view()),
 
     path('speech_text', SpeechTextView.as_view()),
-    path('text_sign', TextSignView.as_view()),
+
     path('animate', AnimationView.as_view()),
-    path('asl_sign_detection', ASLDetectionView.as_view()),
+
 
 ]

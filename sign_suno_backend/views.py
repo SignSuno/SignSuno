@@ -6,28 +6,14 @@ from .serializer import UserSerializer, FavSerializer
 from .models import *
 from django.contrib.auth.hashers import check_password
 from django.http import HttpResponse
-# from moviepy.editor import VideoFileClip
 import jwt, datetime
-# import datetime
-# from jwt import encode
-# import pyjwt as jwt
-
-
-from rest_framework.parsers import JSONParser
-import io
-import cv2
 
 from .serializer import *
 from .emails import *
 from .speech_to_text import *
-from .conv_to_sign import *
-
-import sys
-sys.path.append('D:\Documents\GEC Online Classes\ML-model\Sign-Suno')
-from inference_classifier import sign_lang_recognition_asl
 
 # Create your views here.
-  
+
 #Registration
 class UserRegView(APIView):
     def post(self, request):
@@ -252,101 +238,110 @@ class getUserView(APIView):
                 'status': 400,
         })
 
-class getProfileView(APIView):
+class getLeaderBoardDetails(APIView):
     def post(self, request):
-
-        userid = request.data['userId']
-
-        record = profile.objects.filter(userId=userid).first()
-        print("record:",record)
-
-        if record is not None:
-            serializer = ProfileSerializer(record)
-            profile_pic = serializer.data['profile_img']
-            print("img file:",profile_pic)
-
-            return Response({
-                'status': 200,
-                'message': 'success',
-                'profile_img': profile_pic
-            })
+        userId = request.data['username']
         
+        queryset = list(leader.objects.all().order_by('-score'))
+        print("****************QuerySet\n",queryset)
+        rank = 1
+        score =0
+
+        for record in queryset:
+            serializer = ScoreSerializer(record)
+            print("username:", serializer.data['username'])
+            if userId == serializer.data['username']:
+                score = serializer.data['score']
+                break
+            rank+=1
+
         return Response({
-            'status': 400,
-            'message': 'something went wrong',
-            'profile_img': ''
-        })
+                'status': 200,
+                'rank' : rank,
+                'score' : score,
 
-#Something is wrong here..dunno what
-class UploadProfileView(APIView):
+            })
 
-    def post(self, request, format=None):
-        print("***",request.data)
-        xyz= request.data['userId']
-        print("***",xyz)
+#NEED TO FIXXXXXXXXX
+# class detailsChangeView(APIView):
+#     def post(self, request):
 
-        # image_instance = profile.objects.get(userId=xyz)
+#         oldId = request.data['username']
+#         newId = request.data['newuser']
+#         newName = request.data['name']
+#         newEmail = request.data['email_id']
 
-        try:
-            image_instance = profile.objects.get(userId=xyz)
-            # image_instance = profile.objects.filter(userId=xyz).first()
-            print("$$$",image_instance)
-        
-        except profile.DoesNotExist:
-            image_instance = None
+#         print(oldId,newId,newName,newEmail)
 
-        # If an existing image instance exists, update it
-        if image_instance:
-            serializer = UpdateProfileSerializer(instance=image_instance, data=request.data)
-        else:
-            serializer = ProfileSerializer(data=request.data)
+#         record = user.objects.filter(username=oldId)
+#         print("record:",record)
 
-        # serializer = ProfileSerializer(data=request.data)
-        print("***",serializer)
-        if serializer.is_valid():
-            serializer.save(userId=xyz)
-            # serializer.save()
-            return Response(data=serializer.data, status=200)
-        else:
-            return Response(data=serializer.errors, status=400)
+#         if record is not None:
+#             #update values
+#             # record.update(username=newId)
+#             record.update(username=newId)
+#             record.update(name=newName)
+#             record.update(email_id=newEmail)
+#             # record.username = newId
+#             # record.name = newName
+#             # record.email_id = newEmail
+#             record.save()
+
+#             serializer = UserSerializer(instance=record)
+#             updated_data = serializer.data
+#             return Response({
+#                     'status': 200,
+#                     'message': 'success',
+#                     'data': updated_data
+#                 })
+
+#         return Response({
+#             'status': 400,
+#             'message': 'something went wrong',
+#             # 'data': serializer.errors
+#         })
 
 class detailsChangeView(APIView):
     def put(self, request):
 
-        json_data = request.body
-        stream = io.BytesIO(json_data)
-        python_data =JSONParser().parse(stream)
-        print("***************",python_data)
+        oldId = request.data['username']
+        newId = request.data['newuser']
+        newName = request.data['name']
+        newEmail = request.data['email_id']
 
-        record_id = python_data.get('username',None)
-        print("######",record_id)
+        print(oldId,newId,newName,newEmail)
 
-        if record_id is not None:
-            record = user.objects.get(username=record_id)
-            print("record:",record)
+        record = user.objects.get(username=oldId)
+        print("record:",record)
 
-            serializer = UpdateSerializer(record, data=python_data)
-            # print("####",serializer.data)
+        if record is not None:
+            #update values
+            # record.update(username=newId)
+            record.update(username=newId)
+            record.update(name=newName)
+            record.update(email_id=newEmail)
+            # record.username = newId
+            # record.name = newName
+            # record.email_id = newEmail
+            # record.save()
 
-            if serializer.is_valid():
-                print("####",serializer.validated_data)
-                serializer.save()
-                return Response({
+            serializer = UserSerializer(instance=record)
+            updated_data = serializer.data
+            return Response({
                     'status': 200,
                     'message': 'success',
-                    'data': serializer.validated_data
+                    'data': updated_data
                 })
 
         return Response({
             'status': 400,
             'message': 'something went wrong',
-            'data': serializer.errors
+            # 'data': serializer.errors
         })
-         
+
 class deleteAccountView(APIView):
     def post(self, request):
         userID = request.data['username']
-        print("USERID",userID)
 
         record = user.objects.filter(username=userID).first()
         print("record:",record)
@@ -361,7 +356,6 @@ class deleteAccountView(APIView):
             'status': 400,
             'message': 'something went wrong',
         })
-
 
 #fav phrases
 class SavePhraseView(APIView):
@@ -438,41 +432,35 @@ class DeletePhraseView(APIView):
             print('user1',user1)
             # print(user1.freq)
 
-            if user1 is not None:
-                user1.delete()
+            if user1 is None:
+                serializer.save()
                 return Response({
-                        'status': 200,
-                    })
+                'status': 200,
+                'message': 'success',
+                'data': serializer.data
+            })
+            else:
+                user2 = favs.objects.get(username=user1.username, word_phrase=word)
+                print('user2',user2)
+                user2.freq = user2.freq+1
+                user2.save()
+                serializer = FavSerializer(instance=user2)
+                updated_data = serializer.data
 
+                # serializer.validated_data.update({'freq': user1.freq})
+                # print(serializer)
+                # serializer.save()
+                return Response({
+                    'status': 200,
+                    'message': 'success',
+                    'data': updated_data
+                })
         return Response({
-            'status': 400,
-            'message': 'something went wrong',
+                'status': 400,
+                'message': 'something went wrong',
+                'data': serializer.errors
         })
-
-#In Review...Might be discarded
-class UpdatePhraseView(APIView):
-
-    def post(self, request, format=None):
-        print("***",request.data)
-        username= request.data['username']
-        print("***",username)
-
-        old= request.data['old_phrase']
-        print("***",old)
-
-        fav_instance = favs.objects.get(username=username, word_phrase=old)
-
-        # If an existing image instance exists, update it
-        serializer = UpdateFavSerializer(instance=fav_instance, data=request.data)
-        
-        # serializer = ProfileSerializer(data=request.data)
-        print("***",serializer)
-        if serializer.is_valid():
-            serializer.save(username=username)
-            return Response(data=serializer.data, status=200)
-        else:
-            return Response(data=serializer.errors, status=400)
-
+    
 
 #leaderboard
 class createLeaderView(APIView):
@@ -494,30 +482,6 @@ class createLeaderView(APIView):
                 'message': 'something went wrong',
                 'data': serializer.errors
         })
-
-class getLeaderBoardDetails(APIView):
-    def post(self, request):
-        userId = request.data['username']
-        
-        queryset = list(leader.objects.all().order_by('-score'))
-        print("****************QuerySet\n",queryset)
-        rank = 1
-        score =0
-
-        for record in queryset:
-            serializer = ScoreSerializer(record)
-            print("username:", serializer.data['username'])
-            if userId == serializer.data['username']:
-                score = serializer.data['score']
-                break
-            rank+=1
-
-        return Response({
-                'status': 200,
-                'rank' : rank,
-                'score' : score,
-
-            })
 
 #leaderboard_users
 class AllUsersView(APIView):
@@ -545,11 +509,6 @@ class AllUsersView(APIView):
             print("SERIALISER2:",serializer2)
             rec['name']=serializer2.data['name']
 
-            userId = profile.objects.filter(userId=serializer1.data['username']).first()
-            serializer3 = ProfileSerializer(userId)
-            print("SERIALISER3:",serializer3)
-            rec['profile']=serializer3.data['profile_img']
-
             final.append(rec)
         
         print("**************************FINAL\n",final)
@@ -574,11 +533,6 @@ class CurrentUserView(APIView):
         serializer2 = UserSerializer(name)
         print("SERIALISER2:",serializer2)
         record['name']=serializer2.data['name']
-
-        userId = profile.objects.filter(userId=serializer1.data['username']).first()
-        serializer3 = ProfileSerializer(userId)
-        print("SERIALISER3:",serializer3)
-        record['profile']=serializer3.data['profile_img']
 
         print("**************************FINAL\n",record)
 
@@ -621,6 +575,14 @@ class SpeechTextView(APIView):
         result = speech_text()
         return Response({'status': 200,'text': result})
 
+#animations
+# def video_view(request, video_id):
+#     xyz = animations.objects.get(tag=video_id)
+#     video_file = xyz.video
+#     response = HttpResponse(video_file, content_type='video/mp4')
+#     # response['Content-Disposition'] = f'inline; filename="{video.video_file.name}"'
+#     return response
+
 class AnimationView(APIView):
     def post(self, request):
 
@@ -628,11 +590,8 @@ class AnimationView(APIView):
         tags = request.data['tags']
         print(tags)
 
-        comm_type = request.data['type']
-        print(comm_type)
-
         for val in tags:
-            sign = animations.objects.filter(tag=val, type=comm_type).first()
+            sign = animations.objects.filter(tag=val).first()
             print("SIGN:",sign)
             
 
@@ -658,92 +617,4 @@ class AnimationView(APIView):
             'message': 'success',
             'videos': final
         })
-
-#nltk conversion
-class TextSignView(APIView):
-    def post(self,request):
-        t = request.data['text']
-
-        data_type = request.data['type']
-        set = animations.objects.filter(type=data_type)
-        database = []
-        for s in set:
-            database.append(s.tag)
-        
-        print("database:",database)
-
-        result = text_to_sign(t,database)
-        return Response({'status': 200,'text': result})
-
-
-
-#ASL Sign Language Recognition
-from rest_framework.parsers import MultiPartParser
-import os
-import subprocess
-
-def convert_webm_to_mp4(video_path, mp4_path):
-    print("Hello World")
-    print(video_path)
-    print(mp4_path)
-      
-    if os.path.exists(mp4_path):
-            os.remove(mp4_path)
-
-    ffmpeg_command = f'ffmpeg -i "{video_path}" -c:v libx264 -crf 23 -c:a aac -b:a 128k "{mp4_path}"'
-    print("&&&&&&&&&&&&&ffmpeg command",ffmpeg_command)
-        
-    try:
-        subprocess.check_output(ffmpeg_command, shell=True)
-        print('Conversion successful')
-    except subprocess.CalledProcessError as e:
-        print(f'Conversion failed: {e}')
-
-
-class ASLDetectionView(APIView):
-    def post(self, request, format=None):
-        video_file = request.FILES.get('videoFile')
-        print("*********",video_file)
-
-        # Save the video file. Here, we assume you have a "videos" directory where you want to save the files
-        video_path = f'videos/{video_file.name}'
-
-        #clear all existing data
-        print("xxxxxxx",os.path.exists(video_path))
-        if os.path.exists(video_path):
-            os.remove(video_path)
-
-        with open(video_path, 'wb') as file:
-            for chunk in video_file.chunks():
-                file.write(chunk)
-
-        # Convert the video to MP4
-        # Method 1
-        mp4_path = f'videos/{os.path.splitext(video_file.name)[0]}.mp4'
-        convert_webm_to_mp4(video_path,mp4_path)
-        print("###############mp4 path",mp4_path)
-
-        # Process the MP4 video file as needed
-        # Perform your desired operations on the saved MP4 video file
-        result = sign_lang_recognition_asl()
-        print("RESULT:",result)
-
-        # txt=""
-
-        # for i in range(len(result)):
-        #     if result[i] == 'spcae':
-        #         txt = txt + " "
-        #     else:
-        #         txt = txt + result[i]
-        
-        # print(txt)
-
-        # Return a response
-        return Response({
-            'message': 'Video file received, converted to MP4, and processed successfully', 
-            'txt': result
-        })
-
-
-
-
+    
