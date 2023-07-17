@@ -6,8 +6,8 @@ import numpy as np
 
 def sign_lang_recognition_isl():
 
-    model_dict1 = pickle.load(open('ISL_model1_new.p', 'rb'))
-    model_dict2 = pickle.load(open('ISL_model2_new.p', 'rb'))
+    model_dict1 = pickle.load(open('SignSuno\ISL_model1_new.p', 'rb'))
+    model_dict2 = pickle.load(open('SignSuno\ISL_model2_new.p', 'rb'))
     model1 = model_dict1['model1']
     model2 = model_dict2['model2']
 
