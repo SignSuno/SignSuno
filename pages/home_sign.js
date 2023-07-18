@@ -108,22 +108,21 @@ export default function Home() {
 
   const textSpeech = async () => {
     setText(text.toLowerCase());
-    console.log("model_text: ", model_text);
 
-    axios
-      .post("http://127.0.0.1:8000/api/text_speech", {
-        txt: text,
-      })
-      .then((response) => {
-        console.log("success", response);
-      })
-      .catch(console.log);
+    if ("speechSynthesis" in window) {
+      const speechSynthesis = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    } else {
+      alert("Text-to-speech is not supported in this browser.");
+    }
   };
 
   const updateScore = async () => {
     console.log("IN HERE");
 
     if (isLoggedIn) {
+      //addToList();
       axios
         .post("http://127.0.0.1:8000/api/update_score", {
           username: user,
